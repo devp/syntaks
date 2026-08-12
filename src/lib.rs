@@ -21,6 +21,30 @@
  * SOFTWARE.
  */
 
-fn main() {
-    syntaks::tei::run();
-}
+//! syntaks as a library.
+//!
+//! The modules are the same ones the `syntaks` binary is built from; the binary
+//! is now a thin wrapper that calls [`tei::run`]. Exposing them lets the engine
+//! be embedded directly by a host process, rather than only driven as a
+//! subprocess over TEI — which some platforms, Android among them, do not permit.
+
+pub mod bitboard;
+pub mod board;
+pub mod core;
+pub mod correction;
+pub mod eval;
+pub mod history;
+pub mod hits;
+pub mod keys;
+pub mod limit;
+pub mod movegen;
+pub mod movepick;
+pub mod node_counter;
+pub mod perft;
+pub mod road;
+pub mod search;
+pub mod takmove;
+pub mod tei;
+pub mod thread;
+pub mod ttable;
+pub mod util;
