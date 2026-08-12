@@ -719,6 +719,7 @@ fn report(thread: &ThreadData, time: f64, multipv: usize) {
 
 fn final_report(thread: &ThreadData, _depth: i32, _time: f64, _multipv: usize) {
     let mv = thread.pv_move().mv();
+    thread.shared().set_best_move(mv);
     println!("bestmove {}", mv);
 }
 
@@ -824,6 +825,13 @@ impl Searcher {
 
         self.sender
             .send(ThreadCommand::StartSearch(self.shared_ctx.clone(), ctx));
+    }
+
+    /// The move the last completed search settled on, mirroring the `bestmove`
+    /// line. Call after [`Searcher::wait`].
+    #[must_use]
+    pub fn best_move(&self) -> Option<Move> {
+        self.shared_ctx.best_move()
     }
 
     pub fn stop(&mut self) {

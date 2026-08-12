@@ -34,7 +34,7 @@ use crate::{
     search::{MAX_DEPTH, SCORE_INF, Score},
     takmove::Move,
 };
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::time::Instant;
 
@@ -98,6 +98,10 @@ pub struct SharedContext {
     stopped: AtomicBool,
     counter: Arc<SearcherCount>,
     nodes: NodeCounter,
+    /// The move the last completed search settled on. Recorded alongside the
+    /// `bestmove` line so an embedding host, which has no stdout to read, can
+    /// retrieve the result programmatically.
+    best_move: Mutex<Option<Move>>,
 }
 
 impl SharedContext {
@@ -111,6 +115,7 @@ impl SharedContext {
             stopped: AtomicBool::new(false),
             counter: Arc::new(SearcherCount::new()),
             nodes: NodeCounter::new(1),
+            best_move: Mutex::new(None),
         }
     }
 
@@ -125,6 +130,16 @@ impl SharedContext {
         self.stopped.store(false, Ordering::Relaxed);
         self.counter.start();
         self.nodes.reset();
+        *self.best_move.lock().unwrap() = None;
+    }
+
+    pub fn set_best_move(&self, mv: Move) {
+        *self.best_move.lock().unwrap() = Some(mv);
+    }
+
+    #[must_use]
+    pub fn best_move(&self) -> Option<Move> {
+        *self.best_move.lock().unwrap()
     }
 
     pub fn get_counter(&self) -> Arc<SearcherCount> {
